@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, Info } from "lucide-react";
+import { Info } from "lucide-react";
 
 export const Navigation = () => {
   const location = useLocation();
@@ -10,11 +10,8 @@ export const Navigation = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo/Home Button */}
-          <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 bg-gradient-hero rounded-lg flex items-center justify-center">
-              <Home className="h-5 w-5 text-white" />
-            </div>
-            <div className="hidden sm:block">
+          <Link to="/" className="hover:opacity-80 transition-opacity">
+            <div>
               <h1 className="text-xl font-bold text-foreground">ISO/IEC 42001</h1>
               <p className="text-xs text-muted-foreground -mt-1">AI Management Assistant</p>
             </div>
