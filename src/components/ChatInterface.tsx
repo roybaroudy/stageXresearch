@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
+import { Navigation } from "./Navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Message {
@@ -84,14 +85,16 @@ export const ChatInterface = ({ initialMessage }: ChatInterfaceProps) => {
   }, [messages, isLoading]);
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex-shrink-0 p-6 border-b border-border bg-card/50">
-        <h1 className="text-2xl font-semibold text-foreground">ISO/IEC 42001 Assistant</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Ask me anything about the AI Management System standard
-        </p>
-      </div>
+    <div className="h-screen flex flex-col">
+      <Navigation />
+      <div className="flex flex-col flex-1">
+        {/* Header */}
+        <div className="flex-shrink-0 p-6 border-b border-border bg-card/50">
+          <h1 className="text-2xl font-semibold text-foreground">Chat Session</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Ask me anything about ISO/IEC 42001
+          </p>
+        </div>
 
       {/* Messages */}
       <div className="flex-1 relative">
@@ -131,6 +134,7 @@ export const ChatInterface = ({ initialMessage }: ChatInterfaceProps) => {
           disabled={isLoading}
           placeholder="Ask about ISO/IEC 42001 requirements, implementation, benefits..."
         />
+        </div>
       </div>
     </div>
   );

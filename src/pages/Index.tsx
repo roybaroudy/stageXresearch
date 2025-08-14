@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChatInterface } from "@/components/ChatInterface";
 import { ChatInput } from "@/components/ChatInput";
+import { Navigation } from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 
 const Index = () => {
@@ -13,18 +14,14 @@ const Index = () => {
   };
 
   if (hasStarted) {
-    return (
-      <div className="min-h-screen bg-gradient-chat">
-        <div className="container mx-auto max-w-4xl h-screen">
-          <ChatInterface initialMessage={initialMessage} />
-        </div>
-      </div>
-    );
+    return <ChatInterface initialMessage={initialMessage} />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-chat flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-chat">
+      <Navigation />
+      <div className="flex items-center justify-center p-4" style={{ minHeight: 'calc(100vh - 4rem)' }}>
+        <div className="w-full max-w-2xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             ISO/IEC 42001
@@ -58,6 +55,7 @@ const Index = () => {
           <p className="text-sm text-muted-foreground">
             Powered by advanced RAG technology for accurate, up-to-date information
           </p>
+        </div>
         </div>
       </div>
     </div>
