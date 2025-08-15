@@ -19,22 +19,27 @@ export const ChatInterface = ({ initialMessage }: ChatInterfaceProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Simulate API response
-  const generateResponse = async (userMessage: string): Promise<string> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-    
-    // Mock responses about ISO/IEC 42001
-    const responses = [
-      "ISO/IEC 42001 is an international standard that provides a framework for establishing, implementing, maintaining, and continually improving an AI management system. It helps organizations manage AI risks and opportunities systematically.",
-      "The standard covers key areas including AI governance, risk management, data quality, transparency, and accountability. It's designed to be applicable to any organization using or developing AI systems.",
-      "One of the key benefits of ISO/IEC 42001 is that it provides a structured approach to AI governance, helping organizations build trust with stakeholders and demonstrate responsible AI practices.",
-      "The standard emphasizes the importance of continuous monitoring and improvement of AI systems, ensuring they remain aligned with organizational objectives and ethical principles throughout their lifecycle.",
-      "ISO/IEC 42001 also addresses the need for proper documentation, training, and competence management in AI-related activities, helping organizations build internal capabilities for responsible AI management."
-    ];
-    
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
+const generateResponse = async (userMessage: string): Promise<string> => {
+  try {
+    const res = await fetch("http://localhost:5000/rag", {  
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query: userMessage }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Server error: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    return data.answer || "No answer returned.";
+  } catch (error) {
+    console.error("Error calling RAG API:", error);
+    return "An error occurred while fetching the response.";
+  }
+};
 
   const handleSendMessage = async (content: string) => {
     const userMessage: Message = {

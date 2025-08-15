@@ -21,7 +21,7 @@ services:
       ENABLE_API_BASED_MODULES: 'true'
       ENABLE_MODULES: 'text2vec-ollama,generative-ollama'
       CLUSTER_HOSTNAME: 'node1'
-      GENERATIVE_OLLAMA_API_ENDPOINT: 'http://ollama:11434'  
+      GENERATIVE_OLLAMA_API_ENDPOINT: 'http://ollama:11434'
 
   ollama:
     image: ollama/ollama
