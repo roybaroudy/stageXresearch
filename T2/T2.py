@@ -30,12 +30,29 @@ def prompt_classifier(state: AgentState) -> AgentState:
 def query_modifier(state: AgentState) -> AgentState:
     if not state["is_similar_query"]:
         state["prompt"] = f"""
-        You are a text to SQL agent. Given a question, generate a SQL query.
+        You are a highly accurate text-to-SQL agent. 
+        Given a natural language question from the user, generate a valid PostgreSQL SQL query.
+
+        Follow these rules strictly:
+        1. Use ONLY single quotes ('') for string literals.
+        2. Use ILIKE for case-insensitive string matching when filtering text columns.
+        3. Always ensure correct table and column names as provided in the schema.
+        4. Do not invent columns or tables that are not in the schema.
+        5. The output must contain ONLY the SQL query, with no explanations or extra text.
 
         Schema:
-        apartments("id" int, "title" text, "display_address" text, "bathrooms" bigint, 
-                   "bedrooms" bigint, "added_on" text, "type" text, "rera" bigint, 
-                   "price" int, "property_type" text)
+        apartments(
+            "id" int,
+            "title" text,
+            "display_address" text,
+            "bathrooms" bigint,
+            "bedrooms" bigint,
+            "added_on" text,
+            "type" text,
+            "rera" bigint,
+            "price" int,
+            "property_type" text
+        )
 
         Question: {state['input']}
         """
@@ -59,18 +76,35 @@ def query_modifier(state: AgentState) -> AgentState:
 
             if apt:
                 state["prompt"] = f"""
-                Generate a SQL query to find apartments similar to one with:
-                - Bedrooms: {apt['bedrooms']}
-                - Bathrooms: {apt['bathrooms']}
-                - Price: around {apt['price']}
-                - Location: around '{apt['display_address']}'
+                You are a PostgreSQL SQL generation assistant. 
+                Generate a valid SQL query to find apartments that are similar to the given reference apartment.
 
-                the id of the reference apartment is {apt['id']} so dont include it.
+                Criteria for similarity:
+                1. Bedrooms: exactly {apt['bedrooms']}
+                2. Bathrooms: exactly {apt['bathrooms']}
+                3. Price: approximately around {apt['price']} (allow some tolerance, e.g., ±10%).
+                4. Location: case-insensitive match for '{apt['display_address']}' using ILIKE.
 
-                Use the following schema:
-                apartments("id" int, "title" text, "display_address" text, "bathrooms" bigint, 
-                           "bedrooms" bigint, "added_on" text, "type" text, "rera" bigint, 
-                           "price" int, "property_type" text)
+                Additional rules:
+                - Exclude the apartment with id = {apt['id']}.
+                - Use ONLY single quotes ('') for string literals.
+                - Use ILIKE for case-insensitive text matching.
+                - The query must follow PostgreSQL syntax.
+                - Output ONLY the SQL query without any explanations.
+
+                Schema:
+                apartments(
+                    "id" int,
+                    "title" text,
+                    "display_address" text,
+                    "bathrooms" bigint,
+                    "bedrooms" bigint,
+                    "added_on" text,
+                    "type" text,
+                    "rera" bigint,
+                    "price" int,
+                    "property_type" text
+                )
                 """
             else:
                 state["prompt"] = "ERROR: No matching apartment found."
