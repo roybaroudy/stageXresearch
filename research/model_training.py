@@ -246,19 +246,76 @@ def main():
         acc = 100.*correct/total
         print(f"Epoch {epoch} Test Loss: {test_loss/len(testloader):.3f} | Test Acc: {acc:.2f}%")
         return acc
+    
+    def train_mixed(epoch, eps_list, mean, std):
+        model.train()
+        running_loss = 0.0
+        total, correct = 0, 0
+
+        for batch_idx, (inputs, targets) in enumerate(trainloader):
+            inputs, targets = inputs.to(device), targets.to(device)
+            optimizer.zero_grad()
+
+            # start with clean samples
+            all_inputs = [inputs]
+            all_targets = [targets]
+
+            # generate adversarial samples for each epsilon
+            for eps in eps_list:
+                adv_inputs = fgsm_attack_on_normalized(inputs, targets, model, eps, mean, std, device)
+                all_inputs.append(adv_inputs)
+                all_targets.append(targets)
+
+            # concatenate clean + all adversarial versions
+            mixed_inputs = torch.cat(all_inputs, dim=0)
+            mixed_targets = torch.cat(all_targets, dim=0)
+
+            # forward + backward
+            outputs = model(mixed_inputs)
+            loss = criterion(outputs, mixed_targets)
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+            _, predicted = outputs.max(1)
+            total += mixed_targets.size(0)
+            correct += predicted.eq(mixed_targets).sum().item()
+
+        acc = 100.*correct/total
+        print(f"[Mixed Adv Train] Epoch {epoch} Loss: {running_loss/len(trainloader):.3f} | Acc: {acc:.2f}%")
+
+    def test_all(epoch, eps_list, mean, std, device):
+        model.eval()
+        # clean accuracy
+        clean_acc = test(epoch)
+
+        # adversarial accuracy at each epsilon
+        adv_accs = {}
+        for eps in eps_list:
+            acc = epoch_adversarial(model, testloader, eps, mean, std, device)
+            adv_accs[eps] = acc
+
+        return min(clean_acc, *adv_accs.values())
+
+
 
     # ---- Train ----
-    #best_acc = 0
-    # for epoch in range(200):
-    #    train(epoch)
-    #    acc = test(epoch)
-    #    scheduler.step()
 
-    #    if acc > best_acc:
-    #        torch.save(model.state_dict(), 'best_resnet44_cifar10.pth')
-    #        best_acc = acc
+    mean = (0.4914, 0.4822, 0.4465)
+    std = (0.2023, 0.1994, 0.2010)
+    eps_list = [0.0, 0.01, 0.03, 0.05]
 
-    #print(f"Best Test Accuracy: {best_acc:.2f}%")
+    best_acc = 0
+    for epoch in range(0):
+       train_mixed(epoch, eps_list, mean, std)
+       acc = test_all(epoch, eps_list, mean, std, device)
+       scheduler.step()
+
+       if acc > best_acc:
+           torch.save(model.state_dict(), 'best_resnet44_cifar10_robust.pth')
+           best_acc = acc
+
+    print(f"Best Test Accuracy: {best_acc:.2f}%")
 
     # ---- Load best model if available and run FGSM eval ----
     try:
